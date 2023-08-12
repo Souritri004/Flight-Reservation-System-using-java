@@ -1,0 +1,324 @@
+import java.io.*;
+import java.nio.file.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+class Flight {
+    private String flightNo;
+    private int capacity;
+    private String from;
+    private String fromCode;
+    private String to;
+    private String toCode;
+    private LocalDateTime arrival;
+    private LocalDateTime departure;
+    private double price;
+
+    public Flight(String flightNo, int capacity, String from, String fromCode, String to, String toCode,
+            LocalDateTime arrival, LocalDateTime departure, double price) {
+        this.flightNo = flightNo;
+        this.capacity = capacity;
+        this.from = from;
+        this.fromCode = fromCode;
+        this.to = to;
+        this.toCode = toCode;
+        this.arrival = arrival;
+        this.departure = departure;
+        this.price = price;
+    }
+
+    public String getFlightNo() {
+        return flightNo;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public String getFromCode() {
+        return fromCode;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public String getToCode() {
+        return toCode;
+    }
+
+    public LocalDateTime getArrival() {
+        return arrival;
+    }
+
+    public LocalDateTime getDeparture() {
+        return departure;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void displayFlightDetail() {
+        System.out.println("Flight No: " + flightNo);
+        System.out.println("From: " + from + " (" + fromCode + ")");
+        System.out.println("To: " + to + " (" + toCode + ")");
+        System.out.println("Arrival: " + arrival.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        System.out.println("Departure: " + departure.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        System.out.println("Price: $" + price);
+    }
+
+    public String toDataString() {
+        return flightNo + "," + capacity + "," + from + "," + fromCode + "," + to + "," + toCode + ","
+                + arrival.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + ","
+                + departure.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "," + price;
+    }
+}
+
+class Passenger {
+    private String fullName;
+    private String passportNo;
+    private int age;
+    private String nationality;
+
+    public Passenger(String fullName, String passportNo, int age, String nationality) {
+        this.fullName = fullName;
+        this.passportNo = passportNo;
+        this.age = age;
+        this.nationality = nationality;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getPassportNo() {
+        return passportNo;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public String getNationality() {
+        return nationality;
+    }
+
+    public void displayPassengerInfo() {
+        System.out.println("Passenger Name: " + fullName);
+        System.out.println("Passport No: " + passportNo);
+        System.out.println("Age: " + age);
+        System.out.println("Nationality: " + nationality);
+    }
+
+    public String toDataString() {
+        return fullName + "," + passportNo + "," + age + "," + nationality;
+    }
+}
+
+class FlightReservationSystem {
+    private List<Flight> flightList;
+    private List<Passenger> passengerList;
+    private String flightsFile = "FLIGHTS.TXT";
+    private String passengersFile = "PASSENGERS.TXT";
+
+    public FlightReservationSystem() {
+        flightList = new ArrayList<>();
+        passengerList = new ArrayList<>();
+    }
+
+    public void loadFlightsFromFile() {
+        try {
+            List<String> lines = Files.readAllLines(Path.of(flightsFile));
+            for (String line : lines) {
+                String[] flightData = line.split(",");
+                String flightNo = flightData[0].trim();
+                int capacity = Integer.parseInt(flightData[1].trim());
+                String from = flightData[2].trim();
+                String fromCode = flightData[3].trim();
+                String to = flightData[4].trim();
+                String toCode = flightData[5].trim();
+                LocalDateTime arrival = LocalDateTime.parse(flightData[6].trim(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                LocalDateTime departure = LocalDateTime.parse(flightData[7].trim(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                double price = Double.parseDouble(flightData[8].trim());
+
+                flightList.add(new Flight(flightNo, capacity, from, fromCode, to, toCode, arrival, departure, price));
+            }
+        } catch (IOException e) {
+            System.out.println("Error occurred while reading the flights file.");
+            e.printStackTrace();
+        }
+    }
+
+    public void writeFlightsToFile() {
+        try {
+            List<String> lines = new ArrayList<>();
+            for (Flight flight : flightList) {
+                lines.add(flight.toDataString());
+            }
+            Files.write(Path.of(flightsFile), lines);
+        } catch (IOException e) {
+            System.out.println("Error occurred while writing the flights file.");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadPassengersFromFile() {
+        try {
+            List<String> lines = Files.readAllLines(Path.of(passengersFile));
+            for (String line : lines) {
+                String[] passengerData = line.split(",");
+                String fullName = passengerData[0].trim();
+                String passportNo = passengerData[1].trim();
+                int age = Integer.parseInt(passengerData[2].trim());
+                String nationality = passengerData[3].trim();
+
+                passengerList.add(new Passenger(fullName, passportNo, age, nationality));
+            }
+        } catch (IOException e) {
+            System.out.println("Error occurred while reading the passengers file.");
+            e.printStackTrace();
+        }
+    }
+
+    public void writePassengersToFile() {
+        try {
+            List<String> lines = new ArrayList<>();
+            for (Passenger passenger : passengerList) {
+                lines.add(passenger.toDataString());
+            }
+            Files.write(Path.of(passengersFile), lines);
+        } catch (IOException e) {
+            System.out.println("Error occurred while writing the passengers file.");
+            e.printStackTrace();
+        }
+    }
+
+    public void displayFlightsDetails() {
+        System.out.println("Flight Details:");
+        System.out.println("------------------------");
+        for (Flight flight : flightList) {
+            flight.displayFlightDetail();
+            System.out.println();
+        }
+    }
+
+    public void bookTicket() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the Flight No:");
+        String flightNo = scanner.nextLine();
+
+        Flight selectedFlight = null;
+        for (Flight flight : flightList) {
+            if (flight.getFlightNo().equalsIgnoreCase(flightNo)) {
+                selectedFlight = flight;
+                break;
+            }
+        }
+
+        if (selectedFlight == null) {
+            System.out.println("Flight not found.");
+            return;
+        }
+
+        System.out.println("Enter the Passenger Name:");
+        String fullName = scanner.nextLine();
+
+        System.out.println("Enter the Passenger's Passport:");
+        String passportNo = scanner.nextLine();
+
+        System.out.println("Enter the Passenger's Age:");
+        int age = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.println("Enter the Passenger's Nationality:");
+        String nationality = scanner.nextLine();
+
+        Passenger passenger = new Passenger(fullName, passportNo, age, nationality);
+        passengerList.add(passenger);
+
+        System.out.println("Ticket booked successfully!");
+        System.out.println("------------------------");
+        System.out.println("Flight Details:");
+        selectedFlight.displayFlightDetail();
+        System.out.println();
+        System.out.println("Passenger Details:");
+        passenger.displayPassengerInfo();
+        System.out.println();
+
+        writePassengersToFile();
+    }
+
+    public void cancelTicket() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the Passenger's Passport:");
+        String passportNo = scanner.nextLine();
+
+        Passenger passengerToRemove = null;
+        for (Passenger passenger : passengerList) {
+            if (passenger.getPassportNo().equalsIgnoreCase(passportNo)) {
+                passengerToRemove = passenger;
+                break;
+            }
+        }
+
+        if (passengerToRemove == null) {
+            System.out.println("Passenger not found.");
+            return;
+        }
+
+        passengerList.remove(passengerToRemove);
+        System.out.println("Ticket canceled successfully!");
+
+        writePassengersToFile();
+    }
+
+    public static void main(String[] args) {
+        FlightReservationSystem reservationSystem = new FlightReservationSystem();
+        reservationSystem.loadFlightsFromFile();
+        reservationSystem.loadPassengersFromFile();
+
+        Scanner scanner = new Scanner(System.in);
+        int choice;
+        do {
+            System.out.println("Flight Reservation System");
+            System.out.println("------------------------");
+            System.out.println("1. View Available Flights");
+            System.out.println("2. Book a Ticket");
+            System.out.println("3. Cancel a Ticket");
+            System.out.println("0. Exit");
+            System.out.print("Enter your choice: ");
+            choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    reservationSystem.displayFlightsDetails();
+                    break;
+                case 2:
+                    reservationSystem.bookTicket();
+                    break;
+                case 3:
+                    reservationSystem.cancelTicket();
+                    break;
+                case 0:
+                    System.out.println("Exiting...");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    break;
+            }
+
+            System.out.println();
+        } while (choice != 0);
+
+        reservationSystem.writeFlightsToFile();
+    }
+}
